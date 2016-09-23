@@ -40,12 +40,71 @@ function Rectangle(x, y, width, height)
      * The type of the object, mainly used to avoid `instanceof` checks
      *
      * @member {number}
+     * @readOnly
+     * @default CONST.SHAPES.RECT
+     * @see PIXI.SHAPES
      */
     this.type = CONST.SHAPES.RECT;
 }
 
 Rectangle.prototype.constructor = Rectangle;
 module.exports = Rectangle;
+
+
+Object.defineProperties(Rectangle.prototype, {
+    /**
+     * returns the left edge of the rectangle
+     *
+     * @member {number}
+     * @memberof PIXI.Rectangle#
+     */
+    left: {
+        get: function ()
+        {
+            return this.x;
+        }
+    },
+
+    /**
+     * returns the right edge of the rectangle
+     *
+     * @member {number}
+     * @memberof PIXI.Rectangle
+     */
+    right: {
+        get: function ()
+        {
+            return this.x + this.width;
+        }
+    },
+
+    /**
+     * returns the top edge of the rectangle
+     *
+     * @member {number}
+     * @memberof PIXI.Rectangle
+     */
+    top: {
+        get: function ()
+        {
+            return this.y;
+        }
+    },
+
+    /**
+     * returns the bottom edge of the rectangle
+     *
+     * @member {number}
+     * @memberof PIXI.Rectangle
+     */
+    bottom: {
+        get: function ()
+        {
+            return this.y + this.height;
+        }
+    }
+
+});
 
 /**
  * A constant empty rectangle.
@@ -64,6 +123,16 @@ Rectangle.EMPTY = new Rectangle(0, 0, 0, 0);
 Rectangle.prototype.clone = function ()
 {
     return new Rectangle(this.x, this.y, this.width, this.height);
+};
+
+Rectangle.prototype.copy = function (rectangle)
+{
+    this.x = rectangle.x;
+    this.y = rectangle.y;
+    this.width = rectangle.width;
+    this.height = rectangle.height;
+
+    return this;
 };
 
 /**
@@ -89,4 +158,72 @@ Rectangle.prototype.contains = function (x, y)
     }
 
     return false;
+};
+
+Rectangle.prototype.pad = function (paddingX, paddingY)
+{
+    paddingX = paddingX || 0;
+    paddingY = paddingY || ( (paddingY !== 0) ? paddingX : 0 );
+
+    this.x -= paddingX;
+    this.y -= paddingY;
+
+    this.width += paddingX * 2;
+    this.height += paddingY * 2;
+};
+
+Rectangle.prototype.fit = function (rectangle)
+{
+    if (this.x < rectangle.x)
+    {
+        this.width += this.x;
+        if(this.width < 0) {
+          this.width = 0;
+        }
+
+        this.x = rectangle.x;
+    }
+
+    if (this.y < rectangle.y)
+    {
+        this.height += this.y;
+        if(this.height < 0) {
+          this.height = 0;
+        }
+        this.y = rectangle.y;
+    }
+
+    if ( this.x + this.width > rectangle.x + rectangle.width )
+    {
+        this.width = rectangle.width - this.x;
+        if(this.width < 0) {
+          this.width = 0;
+        }
+    }
+
+    if ( this.y + this.height > rectangle.y + rectangle.height )
+    {
+        this.height = rectangle.height - this.y;
+        if(this.height < 0) {
+          this.height = 0;
+        }
+    }
+};
+
+Rectangle.prototype.enlarge = function (rect)
+{
+
+    if (rect === Rectangle.EMPTY)
+    {
+        return;
+    }
+
+    var x1 = Math.min(this.x, rect.x);
+    var x2 = Math.max(this.x + this.width, rect.x + rect.width);
+    var y1 = Math.min(this.y, rect.y);
+    var y2 = Math.max(this.y + this.height, rect.y + rect.height);
+    this.x = x1;
+    this.width = x2 - x1;
+    this.y = y1;
+    this.height = y2 - y1;
 };
